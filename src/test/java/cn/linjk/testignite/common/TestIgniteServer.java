@@ -1,17 +1,19 @@
 package cn.linjk.testignite.common;
 
+import cn.linjk.testignite.bean.Country;
 import cn.linjk.testignite.bean.Player;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.Ignition;
-import org.apache.ignite.cache.query.QueryCursor;
-import org.apache.ignite.cache.query.ScanQuery;
-import org.apache.ignite.cache.query.TextQuery;
+import org.apache.ignite.cache.CacheMode;
+import org.apache.ignite.cache.query.*;
+import org.apache.ignite.cache.query.annotations.QuerySqlFunction;
 import org.apache.ignite.configuration.CacheConfiguration;
 import org.apache.ignite.configuration.IgniteConfiguration;
 import org.junit.jupiter.api.Test;
 
 import javax.cache.Cache;
+import java.util.List;
 
 public class TestIgniteServer {
     public static void main(String[] args) {
@@ -69,5 +71,46 @@ public class TestIgniteServer {
                 System.out.println(e.getValue());
             });
         }
+    }
+
+    @Test
+    public void testSqlFunction() {
+        IgniteConfiguration cfg = new IgniteConfiguration();
+        cfg.setPeerClassLoadingEnabled(true);
+
+        CacheConfiguration<Long, Country> funcCacheConf = new CacheConfiguration<>();
+        funcCacheConf.setName("country_cache");
+        funcCacheConf.setIndexedTypes(Long.class, Country.class);
+        funcCacheConf.setCacheMode(CacheMode.REPLICATED);
+        funcCacheConf.setSqlFunctionClasses(TestIgniteServer.class);
+
+        cfg.setCacheConfiguration(funcCacheConf);
+
+        try (Ignite ignite = Ignition.start(cfg)) {
+            IgniteCache<Long, Country> funcCache = Ignition.ignite().getOrCreateCache("country_cache");
+            long id = 1;
+            funcCache.put(id, new Country(id++, "USA", 123));
+            funcCache.put(id, new Country(id++, "India", 456));
+            funcCache.put(id, new Country(id++, "France", 789));
+            funcCache.put(id, new Country(id++, "England", 101112));
+
+            SqlFieldsQuery fieldsQuery = new SqlFieldsQuery(
+                    "select id, name from \"country_cache\".Country where myUpperCache(name) = upper(?) "
+            );
+
+            FieldsQueryCursor<List<?>> result = funcCache.query(fieldsQuery.setArgs("iNdia"));
+            result.forEach(r -> {
+                System.out.println("id=" + r.get(0) + " country = " + r.get(1));
+            });
+        }
+    }
+
+    /**
+     * 自定义sql查询函数(必须public static)
+     */
+    @QuerySqlFunction
+    public static String myUpperCache(String name) {
+        String upperCache = name.toUpperCase();
+        return upperCache;
     }
 }
