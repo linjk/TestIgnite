@@ -24,6 +24,10 @@ public class Player implements Serializable {
     @JoinColumn(name = "clubno", referencedColumnName = "clubno")
     Club club;
 
+    public Player() {
+
+    }
+
     public Player(int playerno, String name, int wages) {
         this.playerno = playerno;
         this.name = name;
