@@ -9,5 +9,4 @@ public class TestIgniteApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(TestIgniteApplication.class, args);
 	}
-
 }
