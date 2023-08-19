@@ -3,12 +3,13 @@ package cn.linjk.testignite.bean;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "player")
 @Cacheable
 @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class Player {
+public class Player implements Serializable {
     @Id
     @Column
     int playerno;
@@ -22,6 +23,12 @@ public class Player {
     @ManyToOne(optional = false)
     @JoinColumn(name = "clubno", referencedColumnName = "clubno")
     Club club;
+
+    public Player(int playerno, String name, int wages) {
+        this.playerno = playerno;
+        this.name = name;
+        this.wages = wages;
+    }
 
     public int getPlayerno() {
         return playerno;
