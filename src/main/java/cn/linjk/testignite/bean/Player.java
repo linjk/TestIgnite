@@ -1,5 +1,6 @@
 package cn.linjk.testignite.bean;
 
+import org.apache.ignite.cache.query.annotations.QueryTextField;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
@@ -14,6 +15,7 @@ public class Player implements Serializable {
     @Column
     int playerno;
 
+    @QueryTextField
     @Column(name = "pname")
     String name;
 

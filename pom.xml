@@ -70,11 +70,11 @@
 <!--			<version>2.5.2</version>-->
 <!--		</dependency>-->
 
-<!--		<dependency>-->
-<!--			<groupId>org.apache.ignite</groupId>-->
-<!--			<artifactId>ignite-indexing</artifactId>-->
-<!--			<version>2.5.2</version>-->
-<!--		</dependency>-->
+		<dependency>
+			<groupId>org.apache.ignite</groupId>
+			<artifactId>ignite-indexing</artifactId>
+			<version>2.5.2</version>
+		</dependency>
 
 		<dependency>
 			<groupId>com.h2database</groupId>
