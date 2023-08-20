@@ -4,15 +4,19 @@ import cn.linjk.testignite.bean.Country;
 import cn.linjk.testignite.bean.Player;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
+import org.apache.ignite.IgniteCompute;
 import org.apache.ignite.Ignition;
 import org.apache.ignite.cache.CacheMode;
 import org.apache.ignite.cache.query.*;
 import org.apache.ignite.cache.query.annotations.QuerySqlFunction;
 import org.apache.ignite.configuration.CacheConfiguration;
 import org.apache.ignite.configuration.IgniteConfiguration;
+import org.apache.ignite.lang.IgniteCallable;
+import org.apache.ignite.lang.IgniteFuture;
 import org.junit.jupiter.api.Test;
 
 import javax.cache.Cache;
+import java.util.Collection;
 import java.util.List;
 
 public class TestIgniteServer {
@@ -101,6 +105,38 @@ public class TestIgniteServer {
             FieldsQueryCursor<List<?>> result = funcCache.query(fieldsQuery.setArgs("iNdia"));
             result.forEach(r -> {
                 System.out.println("id=" + r.get(0) + " country = " + r.get(1));
+            });
+        }
+    }
+
+    @Test
+    public void testBroadcastAsync() {
+        IgniteConfiguration cfg = new IgniteConfiguration();
+        cfg.setPeerClassLoadingEnabled(true);
+
+        try (Ignite ignite =  Ignition.start(cfg)) {
+            // get a compute task
+            IgniteCompute compute = ignite.compute();
+
+            // broadcast the computation to all nodes
+            IgniteCallable<String> callable = new IgniteCallable<String>() {
+                private static final long serialVersionUID = 1L;
+                @Override
+                public String call() throws Exception {
+                    System.out.println("Executing in a cluster ...");
+                    return String.valueOf(System.currentTimeMillis());
+                }
+            };
+
+            // broadcast async and get a future
+            IgniteFuture<Collection<String>> asyncFuture = compute.broadcastAsync(callable);
+            while (!asyncFuture.isDone()) {
+//                System.out.println("wait for response");
+            }
+
+            // get response from all nodes
+            asyncFuture.get().forEach(result -> {
+                System.out.println(result);
             });
         }
     }
