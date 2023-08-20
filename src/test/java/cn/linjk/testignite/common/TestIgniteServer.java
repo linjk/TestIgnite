@@ -2,6 +2,7 @@ package cn.linjk.testignite.common;
 
 import cn.linjk.testignite.bean.Country;
 import cn.linjk.testignite.bean.Player;
+import cn.linjk.testignite.runnable.AdderRunnable;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteCompute;
@@ -138,6 +139,23 @@ public class TestIgniteServer {
             asyncFuture.get().forEach(result -> {
                 System.out.println(result);
             });
+        }
+    }
+
+    @Test
+    public void testIgniteRunnable() {
+        IgniteConfiguration configuration = new IgniteConfiguration();
+        configuration.setPeerClassLoadingEnabled(true);
+
+        try (Ignite ignite = Ignition.start(configuration)) {
+            IgniteCompute compute = ignite.compute();
+//            compute.run(new AdderRunnable(1, 2));
+
+            IgniteFuture<Void> runAsync = compute.runAsync(new AdderRunnable(1, 2));
+            while (!runAsync.isDone()) {
+                //
+            }
+            System.out.println("Job Done.");
         }
     }
 
